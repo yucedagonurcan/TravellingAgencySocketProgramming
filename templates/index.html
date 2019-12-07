@@ -1,0 +1,50 @@
+<header>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css' rel='stylesheet'>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+</header>
+
+<body>
+    <div class="container m-5 col-6">
+        <div class="row align-self-center input-group">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">Starting Date</span>
+                </div>
+                <input type="text" class="form-control" placeholder="01/01/2019""01/01/2019 aria-label=" Username"
+                    aria-describedby="basic-addon1" id="starting_date_picker" required>
+                <div class="invalid-feedback" id="check_starting_date_picker">
+                    Please provide a valid starting date.
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">Return Date</span>
+                </div>
+                <input type="text" class="form-control" placeholder="01/01/2019" aria-label="Username"
+                    aria-describedby="basic-addon1" id="return_date_picker">
+                <div class="invalid-feedback" id="check_return_date_picker">
+                    Please provide a valid return date.
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button id="search_travel" type="button"
+                class="btn btn-outline-primary font-weight-bold btn-block">Search</button>
+        </div>
+    </div>
+</body>
