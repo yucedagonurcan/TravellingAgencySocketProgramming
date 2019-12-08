@@ -19,8 +19,9 @@
 </header>
 
 <body>
-    <div class="container m-5 col-6">
-        <div class="row align-self-center input-group">
+    <div class="container m-5 col-6 bg-light">
+        <label for="basic-url">Your vanity URL</label>
+        <div class="row align-self-center input-group col">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <span class="input-group-text" id="basic-addon1">Starting Date</span>
@@ -41,10 +42,58 @@
                     Please provide a valid return date.
                 </div>
             </div>
+            <div class="btn-group mb-3 row col">
+                <button type="button" class="btn btn-secondary dropdown-toggle mr-3" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Select the preferred hotel
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Separated link</a>
+                </div>
+
+                <button type="button" class="btn btn-secondary dropdown-toggle mr-3" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Select the preferred airline
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Separated link</a>
+                </div>
+
+            </div>
+
         </div>
+        <div class="mb-3 row">
+            <div class="input-group col-4">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">People </span>
+                </div>
+                <input type="text" class="form-control" id="people_cnt" aria-label="How many people will travel?"
+                    value="0">
+                <div class="input-group-append">
+                    <button id="inc_people" class="btn btn-info" type="button">+</button>
+                    <button id="dec_people" class="btn btn-danger" type="button">-</button>
+                </div>
+            </div>
+        </div>
+        <button id="search_travel" type="button" class="btn btn-outline-primary font-weight-bold col-4">Search</button>
+
+        {% if socket_error %}
         <div class="row">
-            <button id="search_travel" type="button"
-                class="btn btn-outline-primary font-weight-bold btn-block">Search</button>
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container">
+                    <h1 class="display-7">Error: </h1>
+                    <p class="lead">{{ socket_error }}</p>
+                </div>
+            </div>
         </div>
+        {% endif %}
     </div>
 </body>
