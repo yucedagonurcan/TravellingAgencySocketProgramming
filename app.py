@@ -20,7 +20,10 @@ def SendDataToServer():
 
     start_date = request.form['starting_date']
     return_date = request.form['return_date']
-    date_socket.send(start_date.encode())
+    preferred_hotel = request.form['preferred_hotel']
+    preferred_airline = request.form['preferred_airline']
+    people_count = request.form['people_count']
+    date_socket.send(f"{start_date}>{return_date}>{preferred_hotel}>{preferred_airline}>{people_count}".encode())
     return "Oldu."
 
 @app.route("/")
