@@ -24,7 +24,8 @@ def SendDataToServer():
     preferred_airline = request.form['preferred_airline']
     people_count = request.form['people_count']
     date_socket.send(f"{start_date}>{return_date}>{preferred_hotel}>{preferred_airline}>{people_count}".encode())
-    return "Oldu."
+    result = date_socket.recv(4096)
+    return result
 
 @app.route("/")
 def home():
