@@ -41,7 +41,7 @@ $(document).ready(function () {
         $("#inc_people").click(() => {
             var people_count = parseInt($('#people_cnt').val());
             if (Number.isNaN(people_count)) {
-                people_count = 0;
+                people_count = 1;
             } else {
                 people_count = people_count + 1;
             }
@@ -50,8 +50,8 @@ $(document).ready(function () {
         })
         $("#dec_people").click(function (e) {
             var people_count = parseInt($('#people_cnt').val());
-            if (Number.isNaN(people_count) || people_count == 0) {
-                people_count = 0;
+            if (Number.isNaN(people_count) || people_count == 1) {
+                people_count = 1;
             } else {
                 people_count = people_count - 1;
             }
