@@ -1,2 +1,2 @@
 # TravellingAgencySocketProgramming
-Travelling Agency Web Tool with C++/Javascript by Socket Programming only.
+Travelling Agency Web Tool with Python-Flask/Javascript by Socket Programming only.
