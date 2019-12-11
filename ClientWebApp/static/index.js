@@ -32,11 +32,16 @@ $(document).ready(function () {
                     'preferred_airline': preferred_airline,
                     'people_count': people_count
                 }, (msg) => {
-                    alert("Data sent. " + msg);
+                    if (msg == "Success") {
+                        $('#accept_reject_modal').modal('toggle');
+                    }
                 });
             }
 
         });
+        $('#accept_offer').click(() => {
+            alert("Offer Accepted.");
+        })
 
         $("#inc_people").click(() => {
             var people_count = parseInt($('#people_cnt').val());

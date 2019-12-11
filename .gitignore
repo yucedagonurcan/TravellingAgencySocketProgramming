@@ -7,3 +7,4 @@ ClientWebApp/.vscode/settings.json
 ClientWebApp/.vscode/launch.json
 ClientWebApp/__pycache__/app.cpython-38.pyc
 AirlinesRequestHandler/.vscode/settings.json
+AirlinesRequestHandler/.vscode/launch.json
