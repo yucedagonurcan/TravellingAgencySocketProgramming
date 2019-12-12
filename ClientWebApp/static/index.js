@@ -37,6 +37,8 @@ $(document).ready(function () {
                 $.post("/check_dates", post_msg, (msg) => {
                     if (msg == "Success") {
                         $('#accept_reject_modal').modal('toggle');
+                    } else {
+                        alert("There is no place for you.");
                     }
                 });
             }
@@ -45,7 +47,9 @@ $(document).ready(function () {
         $('#accept_offer').click(() => {
             $.post("/accept_dates", post_msg, (msg) => {
                 if (msg == "Success") {
-                    alert(msg);
+                    alert("Successfully booked place.");
+                } else {
+                    alert("There is something wrong.");
                 }
             });
         })

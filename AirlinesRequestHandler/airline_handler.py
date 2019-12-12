@@ -8,7 +8,6 @@ HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 55000       
 MAX_PEOPLE_ON_PLANE=3
 
-
 sel = selectors.DefaultSelector()
 conn = sqlite3.connect('Airlines.db')
 cur = conn.cursor()
@@ -33,6 +32,8 @@ def InsertNewBooking(req_dict):
 
     for row in cur.execute(f"SELECT * FROM {req_dict['preferred_airline']}"):
         print(row)
+
+    return True
 
 def CheckAirlineDates(req_dict):
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
