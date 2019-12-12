@@ -12,6 +12,10 @@ sel = selectors.DefaultSelector()
 conn = sqlite3.connect('Airlines.db')
 cur = conn.cursor()
 
+def GetTableNames(cursor):
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    result = cursor.fetchall()
+    return [ row[0] for row in result if row[0] != "sqlite_sequence"]
 def GenerateDateSequence(start_date, end_date, single_quotes=True):
     if single_quotes:
         date_list = [x.strftime("'%m/%d/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
@@ -27,13 +31,13 @@ def GenerateQueryFromRequest(req_dict):
     return new_bookings
 def InsertNewBooking(req_dict):
     new_bookings = GenerateQueryFromRequest(req_dict)
-    cur.executemany("INSERT INTO " + req_dict["preferred_airline"] + " VALUES (?,?,?)", new_bookings)
-    conn.commit()
-
-    for row in cur.execute(f"SELECT * FROM {req_dict['preferred_airline']}"):
-        print(row)
-
-    return True
+    try:
+        cur.executemany("INSERT INTO " + req_dict["preferred_airline"] + " VALUES (?,?,?)", new_bookings)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return "Failure"
+    return "Success"
 
 def CheckAirlineDates(req_dict):
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
@@ -41,27 +45,39 @@ def CheckAirlineDates(req_dict):
     quey_string = f"SELECT * from {req_dict['preferred_airline']} WHERE Date In {where_statement}"
     return pd.read_sql_query(quey_string, conn)
 
-def RequestHandler(request):
-    req_dict = {}
-    method_requested = request.split(" ")[1]
-    request_body = request.split("\r\n")
-    request_body_arr = request_body[-1].replace(" ", "").split("&")
-    for cur_el in request_body_arr:
-        key, val = cur_el.strip().split("=") 
-        req_dict[key] = val
-        
-    if(method_requested == "/check_airline_dates" ):
+def CheckAlternativeAirlines(req_dict):
+    airline_names =  [ airline for airline in GetTableNames(cursor=cur) if req_dict["preferred_airline"] != airline]
+    alternative_airlines = []
+    for cur_airline in airline_names:
+        req_dict["preferred_airline"] = cur_airline
         dates_df = CheckAirlineDates(req_dict)
         if(len(dates_df)<1):
-            return (True, None)
+           alternative_airlines.append(cur_airline)
+        else:
+            max_booking_count = int(dates_df.groupby("Date").size().sort_values(ascending=False)[0])
+            if(max_booking_count + int(req_dict["people_count"])  <= MAX_PEOPLE_ON_PLANE):
+                alternative_airlines.append(cur_airline)
+    return alternative_airlines
+
+def RequestHandler(req_dict, method_requested):
+    if(method_requested == "/check_airline_dates" ):
+        dates_df = CheckAirlineDates(req_dict)
+        if(int(req_dict["people_count"])  > MAX_PEOPLE_ON_PLANE):
+            return "Failure"
+        if(len(dates_df)<1):
+            return "Success"
         else:
             max_booking_count = int(dates_df.groupby("Date").size().sort_values(ascending=False)[0])
             if(max_booking_count + int(req_dict["people_count"])  > MAX_PEOPLE_ON_PLANE):
-                return (False, None)
+                alternatives = CheckAlternativeAirlines(req_dict=req_dict)
+                if(len(alternatives)>0):
+                    return ";".join(alternatives)
+                else:
+                    return "Failure"
             else:
-                return (True, None)
+                return "Success"
     elif(method_requested == "/accept_dates"):
-        return (InsertNewBooking(req_dict), None)
+        return InsertNewBooking(req_dict)
             
 def accept_wrapper(sock):
     conn, addr = sock.accept()
@@ -78,16 +94,21 @@ def service_connection(key, mask):
 
     if mask & selectors.EVENT_READ:
         try:
+            req_dict = {}
             recv_data = sock.recv(4096)
+            request = recv_data.decode()
 
-            req_result = RequestHandler(recv_data.decode())
+            method_requested = request.split(" ")[1]
+            request_body = request.split("\r\n0")
+            request_body_arr = request_body[-1].replace(" ", "").split("&")
 
-            if(req_result[0]):
-                trip_result += "Success;None".encode()
-            elif(not req_result[0] and req_result[1]):
-                trip_result += req_result[1].encode()
-            else:
-                trip_result += b"Failure;None"
+            for cur_el in request_body_arr:
+                key, val = cur_el.strip().split("=") 
+                req_dict[key] = val
+            
+            req_result = RequestHandler(req_dict, method_requested)
+            trip_result += req_result.encode()
+
 
         except ConnectionResetError as e:
             print(f"{data.addr} closed connection.")

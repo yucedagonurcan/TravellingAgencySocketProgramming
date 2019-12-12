@@ -37,8 +37,11 @@ $(document).ready(function () {
                 $.post("/check_dates", post_msg, (msg) => {
                     if (msg == "Success") {
                         $('#accept_reject_modal').modal('toggle');
-                    } else {
+                    } else if (msg == "Failure") {
                         alert("There is no place for you.");
+                    } else {
+                        //TODO: Alternative path is coming.
+                        alert(msg);
                     }
                 });
             }
@@ -48,8 +51,8 @@ $(document).ready(function () {
             $.post("/accept_dates", post_msg, (msg) => {
                 if (msg == "Success") {
                     alert("Successfully booked place.");
-                } else {
-                    alert("There is something wrong.");
+                } else if (msg == "Failure") {
+                    alert("There is something wrong. \nInternal Error.");
                 }
             });
         })

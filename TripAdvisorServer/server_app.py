@@ -6,14 +6,14 @@ HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 54000        # The port used by the server
 PORT_AIRLINE = 55000
 class User():
-    def __init__(self, user_no, start_date, return_date, preferred_hotel, preferred_airline,  people_count, req_method):
+    def __init__(self, user_no, start_date, return_date, preferred_hotel, preferred_airline,  people_count, method_requested):
         self.user_no = user_no 
         self.preferred_airline = preferred_airline 
         self.preferred_hotel = preferred_hotel 
         self.start_date = start_date 
         self.return_date = return_date 
         self.people_count = people_count 
-        self.req_method = req_method 
+        self.method_requested = method_requested 
         
 sel = selectors.DefaultSelector()
 
@@ -34,7 +34,7 @@ def GenerateGetRequest(user):
     host=HOST
     port = 50000
     headers = """\
-GET /{req_method} HTTP/1.1\r
+GET /{method_requested} HTTP/1.1\r
 Content-Type: {content_type}\r
 Content-Length: {content_length}\r
 Host: {host}\r
@@ -50,7 +50,7 @@ Connection: close\r
         people_count=user.people_count
     ).encode('ascii')
     header_bytes = headers.format(
-        req_method=user.req_method,
+        method_requested=user.method_requested,
         content_type="application/x-www-form-urlencoded",
         content_length=len(body_bytes),
         host=str(host) + ":" + str(port)
@@ -83,15 +83,9 @@ def service_connection(key, mask):
             recv_data = sock.recv(4096)
 
             new_user = User(data.addr[1], *recv_data.decode().split(";"))
-            preferred_check = CheckPreferredOrOffer(user=new_user).decode().split(";")
-
-            if(preferred_check[0] == "Success"):
-                trip_result += preferred_check[0].encode()
-            elif(preferred_check[1] != "None"):
-                trip_result += preferred_check[1].encode()
-            else:
-                trip_result += b"None"
-
+            preferred_check = CheckPreferredOrOffer(user=new_user).decode()
+            trip_result += preferred_check.encode()
+                
         except ConnectionResetError as e:
             print(f"{data.addr} closed connection.")
             sel.unregister(sock)
