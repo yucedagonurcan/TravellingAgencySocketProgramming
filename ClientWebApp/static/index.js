@@ -1,23 +1,32 @@
 $(document).ready(function () {
 
     $(function () {
+        post_msg = {
+            "starting_date": null,
+            "return_date": null,
+            "preferred_hotel": null,
+            "preferred_airline": null,
+            "people_count": null
+        };
+
+
         $("#starting_date_picker").datepicker();
         $("#return_date_picker").datepicker();
         $("#search_travel").click(function () {
 
-            var send_msg = true;
-            var start_date = $('#starting_date_picker').val();
-            var return_date = $('#return_date_picker').val();
+            send_msg = true;
+            post_msg["starting_date"] = $('#starting_date_picker').val();
+            post_msg["return_date"] = $('#return_date_picker').val();
 
-            var preferred_hotel = $("#select-hotel-button").text();
-            var preferred_airline = $("#select-airline-button").text()
-            var people_count = $('#people_cnt').val();
+            post_msg["preferred_hotel"] = $("#select-hotel-button").text();
+            post_msg["preferred_airline"] = $("#select-airline-button").text()
+            post_msg["people_count"] = $('#people_cnt').val();
 
-            if (start_date.length == 0) {
+            if (post_msg["starting_date"].length == 0) {
                 $('#starting_date_picker').addClass("is-invalid");
                 var send_msg = false;
             }
-            if (return_date.length == 0) {
+            if (post_msg["return_date"].length == 0) {
                 $('#return_date_picker').addClass("is-invalid");
                 var send_msg = false;
             }
@@ -25,13 +34,7 @@ $(document).ready(function () {
 
                 $('#starting_date_picker').removeClass("is-invalid");
                 $('#return_date_picker').removeClass("is-invalid");
-                $.post("/send_data", {
-                    'starting_date': start_date,
-                    'return_date': return_date,
-                    'preferred_hotel': preferred_hotel,
-                    'preferred_airline': preferred_airline,
-                    'people_count': people_count
-                }, (msg) => {
+                $.post("/check_dates", post_msg, (msg) => {
                     if (msg == "Success") {
                         $('#accept_reject_modal').modal('toggle');
                     }
@@ -40,7 +43,11 @@ $(document).ready(function () {
 
         });
         $('#accept_offer').click(() => {
-            alert("Offer Accepted.");
+            $.post("/accept_dates", post_msg, (msg) => {
+                if (msg == "Success") {
+                    alert(msg);
+                }
+            });
         })
 
         $("#inc_people").click(() => {

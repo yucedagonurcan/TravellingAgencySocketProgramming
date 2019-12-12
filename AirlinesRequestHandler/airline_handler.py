@@ -13,19 +13,27 @@ sel = selectors.DefaultSelector()
 conn = sqlite3.connect('Airlines.db')
 cur = conn.cursor()
 
-def GenerateDateSequence(start_date, end_date):
-    date_list = [x.strftime("'%m/%d/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
+def GenerateDateSequence(start_date, end_date, single_quotes=True):
+    if single_quotes:
+        date_list = [x.strftime("'%m/%d/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
+    else:
+        date_list = [x.strftime("%m/%d/%Y") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
     return date_list
 def GenerateQueryFromRequest(req_dict):
     new_bookings=[]
-    date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
+    date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"], single_quotes=False)
     for cur_date in date_sequence:
-        for idx in range(req_dict["people_count"]):
+        for idx in range(int(req_dict["people_count"])):
             new_bookings.append((None, cur_date, req_dict["user_no"]))
-
+    return new_bookings
 def InsertNewBooking(req_dict):
     new_bookings = GenerateQueryFromRequest(req_dict)
-    cur.execute("INSERT INTO consumers VALUES (?,?,?)", new_bookings)
+    cur.executemany("INSERT INTO " + req_dict["preferred_airline"] + " VALUES (?,?,?)", new_bookings)
+    conn.commit()
+
+    for row in cur.execute(f"SELECT * FROM {req_dict['preferred_airline']}"):
+        print(row)
+
 def CheckAirlineDates(req_dict):
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
     where_statement = "(" + ",".join(date_sequence) + ")"

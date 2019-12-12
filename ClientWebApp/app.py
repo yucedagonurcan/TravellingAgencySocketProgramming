@@ -15,15 +15,29 @@ except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
 
-@app.route("/send_data", methods=["POST"])
-def SendDataToServer():
+@app.route("/check_dates", methods=["POST"])
+def CheckDates():
 
     start_date = request.form['starting_date']
     return_date = request.form['return_date']
     preferred_hotel = request.form['preferred_hotel']
     preferred_airline = request.form['preferred_airline']
     people_count = request.form['people_count']
-    date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count}".encode())
+    req_method="check_airline_dates"
+    date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
+    result = date_socket.recv(4096)
+    return result
+    
+@app.route("/accept_dates", methods=["POST"])
+def AcceptDates():
+
+    start_date = request.form['starting_date']
+    return_date = request.form['return_date']
+    preferred_hotel = request.form['preferred_hotel']
+    preferred_airline = request.form['preferred_airline']
+    people_count = request.form['people_count']
+    req_method="accept_dates"
+    date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
     result = date_socket.recv(4096)
     return result
 
