@@ -58,26 +58,50 @@ def CheckAlternativeHotels(req_dict):
             if(max_booking_count + int(req_dict["people_count"])  <= MAX_PEOPLE_ON_HOTEL):
                 alternative_hotels.append(cur_hotel)
     return alternative_hotels
+def GenerateGetResponse(status, response):
 
+    headers = """\
+HTTP/1.1 {status}\r
+Content-Type: {content_type}\r
+'Accept-Ranges: bytes',\r
+Connection: keep-alive\r
+\r\n"""
+
+    body = 'response={response}'                                 
+    body_bytes = body.format(
+        response=response
+    ).encode('ascii')
+    header_bytes = headers.format(
+        status=status,
+        content_type="text/html; charset=UTF-8 "
+    ).encode('iso-8859-1')
+
+    payload = header_bytes + body_bytes
+    return payload
 def RequestHandler(req_dict, method_requested):
     if(method_requested == "/check_hotel_dates" ):
         dates_df = CheckHotelDates(req_dict)
         if(int(req_dict["people_count"])  > MAX_PEOPLE_ON_HOTEL):
-            return "Failure"
+            return GenerateGetResponse("404 Not Found","Failure")
         if(len(dates_df)<1):
-            return "Success"
+            return GenerateGetResponse("200 OK", "Success")
         else:
             max_booking_count = int(dates_df.groupby("Date").size().sort_values(ascending=False)[0])
             if(max_booking_count + int(req_dict["people_count"])  > MAX_PEOPLE_ON_HOTEL):
                 alternatives = CheckAlternativeHotels(req_dict=req_dict)
                 if(len(alternatives)>0):
-                    return ";".join(alternatives)
+                    return GenerateGetResponse("200 OK", ";".join(alternatives))
                 else:
-                    return "Failure"
+                    return GenerateGetResponse("404 Not Found","Failure")
             else:
-                return "Success"
+                return GenerateGetResponse("200 OK", "Success")
     elif(method_requested == "/accept_hotel_dates"):
-        return InsertNewBooking(req_dict)
+        insertion_result =  InsertNewBooking(req_dict)
+        if(insertion_result == "Success"):
+            return GenerateGetResponse("200 OK", "Success")
+        else:
+            return GenerateGetResponse("404 Not Found","Failure")
+
             
 def accept_wrapper(sock):
     conn, addr = sock.accept()
@@ -107,7 +131,7 @@ def service_connection(key, mask):
                 req_dict[key] = val
             
             req_result = RequestHandler(req_dict, method_requested)
-            trip_result += req_result.encode()
+            trip_result += req_result
 
 
         except ConnectionResetError as e:

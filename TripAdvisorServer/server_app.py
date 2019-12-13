@@ -64,13 +64,18 @@ Connection: close\r
     ).encode('ascii')
     header_bytes = headers.format(
         method_requested=user.method_requested,
-        content_type="application/x-www-form-urlencoded",
+        content_type="text/html; charset=UTF-8",
         content_length=len(body_bytes),
         host=str(host) + ":" + str(port)
     ).encode('iso-8859-1')
 
     payload = header_bytes + body_bytes
     return payload
+def ParseHTTPResponse(response):
+    res_splitted = response.split(" ")
+    status_code = res_splitted[1]
+    body = response.split("\r\n")[-1].replace(" ", "").split("=")[-1]
+    return status_code, body
 
 def CheckPreferredOrOffer(user):
     if(user.method_requested == "check_dates"):
@@ -86,8 +91,26 @@ def CheckPreferredOrOffer(user):
         airline_response = airline_socket.recv(4096)
         hotel_response = hotel_socket.recv(4096)
 
-        return b"||".join([airline_response, hotel_response])
+        airline_status, airline_body = ParseHTTPResponse(airline_response.decode())
+
+        if(airline_status == "200"):
+            airline_response=airline_body
+        else:
+            airline_response = "Failure"
+
+        hotel_status, hotel_body = ParseHTTPResponse(hotel_response.decode())
+
+        if(hotel_status == "200"):
+            hotel_response=hotel_body
+        else:
+            hotel_response = "Failure"
+
+
+
+        return "||".join([airline_response, hotel_response])
+
     elif(user.method_requested == "accept_dates"):
+
         user.method_requested = "accept_airline_dates"
         get_request_airline = GenerateGetRequest(user)
         user.method_requested = "accept_hotel_dates"
@@ -98,7 +121,23 @@ def CheckPreferredOrOffer(user):
 
         airline_response = airline_socket.recv(4096)
         hotel_response = hotel_socket.recv(4096)
-        return b"||".join([airline_response, hotel_response])
+
+        airline_status, airline_body = ParseHTTPResponse(airline_response.decode())
+
+        if(airline_status == "200"):
+            airline_response=airline_body
+        else:
+            airline_response = "Failure"
+
+        hotel_status, hotel_body = ParseHTTPResponse(hotel_response.decode())
+
+        if(hotel_status == "200"):
+            hotel_response=hotel_body
+        else:
+            hotel_response = "Failure"
+        
+        return "||".join([airline_response, hotel_response])
+
     return b"Failure||Failure"
 def accept_wrapper(sock):
     conn, addr = sock.accept()
@@ -119,7 +158,7 @@ def service_connection(key, mask):
             recv_data = sock.recv(4096)
 
             new_user = User(data.addr[1], *recv_data.decode().split(";"))
-            preferred_check = CheckPreferredOrOffer(user=new_user).decode()
+            preferred_check = CheckPreferredOrOffer(user=new_user)
             trip_result += preferred_check.encode()
                 
         except ConnectionResetError as e:
