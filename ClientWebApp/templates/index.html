@@ -20,7 +20,7 @@
 
 <body>
     <div class="container m-5 col-6 bg-light">
-        <label for="basic-url">Your vanity URL</label>
+        <label for="basic-url">Book your trip: </label>
         <div class="row align-self-center input-group col">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
@@ -49,10 +49,10 @@
                         Preferred hotel
                     </button>
                     <button class="dropdown-menu" id="select-hotel">
-                        <a class="dropdown-item" href="#">Marmara Hotel</a>
-                        <a class="dropdown-item" href="#">Sheraton Hotel</a>
-                        <a class="dropdown-item" href="#">Holiday Inn</a>
-                        <a class="dropdown-item" href="#">Kocaoğlan Hotel</a>
+                        <a class="dropdown-item" href="#">MarmaraHotel</a>
+                        <a class="dropdown-item" href="#">SheratonHotel</a>
+                        <a class="dropdown-item" href="#">HolidayInn</a>
+                        <a class="dropdown-item" href="#">KocaoğlanHotel</a>
                     </button>
                 </div>
                 <div>
@@ -62,10 +62,10 @@
                     </button>
                     <button class="dropdown-menu" id="select-airline">
                         <a class="dropdown-item" href="#">Pegasus</a>
-                        <a class="dropdown-item" href="#">Turkish Airlines</a>
-                        <a class="dropdown-item" href="#">Emirates Airlines</a>
+                        <a class="dropdown-item" href="#">TurkishAirlines</a>
+                        <a class="dropdown-item" href="#">EmiratesAirlines</a>
                         <a class="dropdown-item" href="#">EasyJet</a>
-                        <a class="dropdown-item" href="#">Ryan Air</a>
+                        <a class="dropdown-item" href="#">RyanAir</a>
                     </button>
                 </div>
             </div>
@@ -127,12 +127,26 @@
                         <div class="container-fluid">
                             <div class="row">
 
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="exampleRadios"
-                                        id="exampleRadios1" value="option1" checked>
-                                    <label class="form-check-label" for="exampleRadios1">
-                                        Default radio
-                                    </label>
+                                <div>
+                                    <button type="button" class="btn btn-secondary dropdown-toggle mr-3"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        id="select-alternative-airline-button">
+                                        Select airline
+                                    </button>
+                                    <button class="dropdown-menu" id="select-alternative-airline">
+
+                                        <a href=""></a>
+                                    </button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-secondary dropdown-toggle mr-3"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        id="select-alternative-hotel-button">
+                                        Select hotel
+                                    </button>
+                                    <button class="dropdown-menu" id="select-alternative-hotel">
+                                        <a href=""></a>
+                                    </button>
                                 </div>
 
 

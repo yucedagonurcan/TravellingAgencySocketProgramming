@@ -80,7 +80,6 @@ def CheckPreferredOrOffer(user):
         user.method_requested = "check_hotel_dates"
         get_request_hotel = GenerateGetRequest(user)
 
-
         airline_socket.sendall(get_request_airline)
         hotel_socket.sendall(get_request_hotel)
 
@@ -88,7 +87,19 @@ def CheckPreferredOrOffer(user):
         hotel_response = hotel_socket.recv(4096)
 
         return b"||".join([airline_response, hotel_response])
+    elif(user.method_requested == "accept_dates"):
+        user.method_requested = "accept_airline_dates"
+        get_request_airline = GenerateGetRequest(user)
+        user.method_requested = "accept_hotel_dates"
+        get_request_hotel = GenerateGetRequest(user)
 
+        airline_socket.sendall(get_request_airline)
+        hotel_socket.sendall(get_request_hotel)
+
+        airline_response = airline_socket.recv(4096)
+        hotel_response = hotel_socket.recv(4096)
+        return b"||".join([airline_response, hotel_response])
+    return b"Failure||Failure"
 def accept_wrapper(sock):
     conn, addr = sock.accept()
     print(f"Connection accepted from {addr}")
