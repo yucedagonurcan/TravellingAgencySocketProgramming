@@ -1,6 +1,22 @@
 $(document).ready(function () {
 
     $(function () {
+        function ShowAlert(strong_msg, regular_msg, is_success) {
+            if (is_success) {
+                alert_type = "alert-success";
+            } else {
+                alert_type = "alert-warning";
+            }
+            $("#info-alert").addClass(alert_type);
+            $("#info-alert").html(`<strong>${strong_msg}</strong> ${regular_msg}`);
+            $("#info-alert").show()
+
+            $("#info-alert").fadeTo(2000, 500).slideUp(500, function () {
+                $(this).hide();
+                $(this).removeClass(alert_type);
+            });
+
+        }
         post_msg = {
             "starting_date": null,
             "return_date": null,
@@ -10,8 +26,19 @@ $(document).ready(function () {
         };
 
 
-        $("#starting_date_picker").datepicker();
-        $("#return_date_picker").datepicker();
+        $("#starting_date_picker").datepicker({
+            changeYear: true,
+            changeMonth: true,
+            minDate: 0,
+            dateFormat: "dd/m/yy",
+            yearRange: "-100:+20",
+        });
+        $("#return_date_picker").datepicker({
+            changeYear: true,
+            changeMonth: true,
+            yearRange: "-100:+20",
+            dateFormat: "dd/m/yy",
+        });
         $("#search_travel").click(function () {
 
             var send_msg = true;
@@ -51,7 +78,7 @@ $(document).ready(function () {
                     if (msg == "Success||Success") {
                         $('#accept_reject_modal_single').modal('toggle');
                     } else if (msg == "Failure||Failure" || splitted_msg[0] == "Failure" || splitted_msg[1] == "Failure") {
-                        alert("There is no place for you.");
+                        ShowAlert("No Luck!", "There is no place for you.", false);
                     } else {
                         var splitted_msg = msg.split("||");
                         if (splitted_msg[0] == "Success") {
@@ -102,9 +129,9 @@ $(document).ready(function () {
         $('#accept_offer_single').click(() => {
             $.post("/accept_dates", post_msg, (msg) => {
                 if (msg == "Success||Success") {
-                    alert("Successfully booked your place.");
+                    ShowAlert("All OK", "Successfully booked your place.", true);
                 } else {
-                    alert("There is something wrong. \nInternal Error.");
+                    ShowAlert("ERROR", "There is something wrong. Internal Error.", false);
                 }
             });
         });
@@ -134,9 +161,9 @@ $(document).ready(function () {
                 $.post("/accept_dates", post_msg, (msg) => {
 
                     if (msg == "Success||Success") {
-                        alert("Successfully booked your place.");
+                        ShowAlert("Great Choice", "Successfully booked your alternative place.", true);
                     } else {
-                        alert("There is something wrong. \nInternal Error.");
+                        ShowAlert("ERROR", "There is something wrong. Internal Error.", false);
                     }
                 });
             }

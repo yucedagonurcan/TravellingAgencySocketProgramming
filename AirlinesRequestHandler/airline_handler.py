@@ -18,9 +18,9 @@ def GetTableNames(cursor):
     return [ row[0] for row in result if row[0] != "sqlite_sequence"]
 def GenerateDateSequence(start_date, end_date, single_quotes=True):
     if single_quotes:
-        date_list = [x.strftime("'%m/%d/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
+        date_list = [x.strftime("'%d/%m/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
     else:
-        date_list = [x.strftime("%m/%d/%Y") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
+        date_list = [x.strftime("%d/%m/%Y") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
     return date_list
 def GenerateQueryFromRequest(req_dict):
     new_bookings=[]
