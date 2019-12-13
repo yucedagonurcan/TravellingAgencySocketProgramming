@@ -87,8 +87,8 @@
 
 
 
-       
-        <div id="accept_reject_modal" class="modal fade" role="dialog">
+
+        <div id="accept_reject_modal_single" class="modal fade" role="dialog">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -101,9 +101,51 @@
                         <p>You can always reject and search for another dates.</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" id="reject_offer" class="btn btn-danger"
+                        <button type="button" id="reject_offer_single" class="btn btn-danger"
                             data-dismiss="modal">Reject</button>
-                        <button type="button" id="accept_offer" class="btn btn-success"
+                        <button type="button" id="accept_offer_single" class="btn btn-success"
+                            data-dismiss="modal">Accept</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="accept_reject_modal_alternative" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content ">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Not so lucky! You can try this alternative bookings.</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You can always reject and search for another dates.</p>
+
+                        <div class="container-fluid">
+                            <div class="row">
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="exampleRadios"
+                                        id="exampleRadios1" value="option1" checked>
+                                    <label class="form-check-label" for="exampleRadios1">
+                                        Default radio
+                                    </label>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="reject_offer_alternative" class="btn btn-danger"
+                            data-dismiss="modal">Reject</button>
+                        <button type="button" id="accept_offer_alternative" class="btn btn-success"
                             data-dismiss="modal">Accept</button>
                     </div>
                 </div>

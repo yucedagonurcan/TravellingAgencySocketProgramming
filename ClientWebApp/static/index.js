@@ -35,28 +35,36 @@ $(document).ready(function () {
                 $('#starting_date_picker').removeClass("is-invalid");
                 $('#return_date_picker').removeClass("is-invalid");
                 $.post("/check_dates", post_msg, (msg) => {
-                    if (msg == "Success") {
-                        $('#accept_reject_modal').modal('toggle');
-                    } else if (msg == "Failure") {
+                    if (msg == "Success||Success") {
+                        $('#accept_reject_modal_single').modal('toggle');
+                    } else if (msg == "Failure||Failure") {
                         alert("There is no place for you.");
                     } else {
-                        //TODO: Alternative path is coming.
-                        alert(msg);
+                        $('#accept_reject_modal_alternative').modal('toggle');
                     }
                 });
             }
 
         });
-        $('#accept_offer').click(() => {
+        $('#accept_offer_single').click(() => {
             $.post("/accept_dates", post_msg, (msg) => {
                 if (msg == "Success") {
-                    alert("Successfully booked place.");
+                    alert("Successfully booked your place.");
                 } else if (msg == "Failure") {
                     alert("There is something wrong. \nInternal Error.");
                 }
             });
         })
-
+        $('#accept_offer_alternative').click(() => {
+            $.post("/accept_dates", post_msg, (msg) => {
+                if (msg == "Success") {
+                    alert("Successfully booked your place.");
+                } else if (msg == "Failure") {
+                    alert("There is something wrong. \nInternal Error.");
+                }
+            });
+        })
+        
         $("#inc_people").click(() => {
             var people_count = parseInt($('#people_cnt').val());
             if (Number.isNaN(people_count)) {
