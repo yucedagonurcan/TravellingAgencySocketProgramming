@@ -23,7 +23,7 @@ def CheckDates():
     preferred_hotel = request.form['preferred_hotel']
     preferred_airline = request.form['preferred_airline']
     people_count = request.form['people_count']
-    req_method="check_airline_dates"
+    req_method="check_dates"
     date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
     result = date_socket.recv(4096)
     return result

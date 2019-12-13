@@ -5,11 +5,11 @@ import selectors
 import types 
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
-PORT = 55000       
-MAX_PEOPLE_ON_PLANE=3
+PORT = 56000       
+MAX_PEOPLE_ON_HOTEL=3
 
 sel = selectors.DefaultSelector()
-conn = sqlite3.connect('Airlines.db')
+conn = sqlite3.connect('Hotels.db')
 cur = conn.cursor()
 
 def GetTableNames(cursor):
@@ -32,51 +32,51 @@ def GenerateQueryFromRequest(req_dict):
 def InsertNewBooking(req_dict):
     new_bookings = GenerateQueryFromRequest(req_dict)
     try:
-        cur.executemany("INSERT INTO " + req_dict["preferred_airline"] + " VALUES (?,?,?)", new_bookings)
+        cur.executemany("INSERT INTO " + req_dict["preferred_hotel"] + " VALUES (?,?,?)", new_bookings)
         conn.commit()
     except Exception as e:
         print(e)
         return "Failure"
     return "Success"
 
-def CheckAirlineDates(req_dict):
+def CheckHotelDates(req_dict):
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
     where_statement = "(" + ",".join(date_sequence) + ")"
-    quey_string = f"SELECT * from {req_dict['preferred_airline']} WHERE Date In {where_statement}"
+    quey_string = f"SELECT * from {req_dict['preferred_hotel']} WHERE Date In {where_statement}"
     return pd.read_sql_query(quey_string, conn)
 
-def CheckAlternativeAirlines(req_dict):
-    airline_names =  [ airline for airline in GetTableNames(cursor=cur) if req_dict["preferred_airline"] != airline]
-    alternative_airlines = []
-    for cur_airline in airline_names:
-        req_dict["preferred_airline"] = cur_airline
-        dates_df = CheckAirlineDates(req_dict)
+def CheckAlternativeHotels(req_dict):
+    hotel_names =  [ hotel for hotel in GetTableNames(cursor=cur) if req_dict["preferred_hotel"] != hotel]
+    alternative_hotels = []
+    for cur_hotel in hotel_names:
+        req_dict["preferred_hotel"] = cur_hotel
+        dates_df = CheckHotelDates(req_dict)
         if(len(dates_df)<1):
-           alternative_airlines.append(cur_airline)
+           alternative_hotels.append(cur_hotel)
         else:
             max_booking_count = int(dates_df.groupby("Date").size().sort_values(ascending=False)[0])
-            if(max_booking_count + int(req_dict["people_count"])  <= MAX_PEOPLE_ON_PLANE):
-                alternative_airlines.append(cur_airline)
-    return alternative_airlines
+            if(max_booking_count + int(req_dict["people_count"])  <= MAX_PEOPLE_ON_HOTEL):
+                alternative_hotels.append(cur_hotel)
+    return alternative_hotels
 
 def RequestHandler(req_dict, method_requested):
-    if(method_requested == "/check_airline_dates" ):
-        dates_df = CheckAirlineDates(req_dict)
-        if(int(req_dict["people_count"])  > MAX_PEOPLE_ON_PLANE):
+    if(method_requested == "/check_hotel_dates" ):
+        dates_df = CheckHotelDates(req_dict)
+        if(int(req_dict["people_count"])  > MAX_PEOPLE_ON_HOTEL):
             return "Failure"
         if(len(dates_df)<1):
             return "Success"
         else:
             max_booking_count = int(dates_df.groupby("Date").size().sort_values(ascending=False)[0])
-            if(max_booking_count + int(req_dict["people_count"])  > MAX_PEOPLE_ON_PLANE):
-                alternatives = CheckAlternativeAirlines(req_dict=req_dict)
+            if(max_booking_count + int(req_dict["people_count"])  > MAX_PEOPLE_ON_HOTEL):
+                alternatives = CheckAlternativeHotels(req_dict=req_dict)
                 if(len(alternatives)>0):
                     return ";".join(alternatives)
                 else:
                     return "Failure"
             else:
                 return "Success"
-    elif(method_requested == "/accept_airline_dates"):
+    elif(method_requested == "/accept_hotel_dates"):
         return InsertNewBooking(req_dict)
             
 def accept_wrapper(sock):
@@ -132,7 +132,7 @@ lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 lsock.bind((HOST, PORT))
 lsock.listen()
-print(f"Airline Socket server is listening on {HOST}:{PORT}")
+print(f"Hotel Socket server is listening on {HOST}:{PORT}")
 lsock.setblocking(False)
 
 

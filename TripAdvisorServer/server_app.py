@@ -5,6 +5,7 @@ import types
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 54000        # The port used by the server
 PORT_AIRLINE = 55000
+PORT_HOTEL = 56000
 class User():
     def __init__(self, user_no, start_date, return_date, preferred_hotel, preferred_airline,  people_count, method_requested):
         self.user_no = user_no 
@@ -28,10 +29,21 @@ except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
 #*****
+#! Hotel Socket Connection
+hotel_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_error = None
+try:
+    hotel_socket.connect((HOST, PORT_HOTEL))
+except socket.gaierror as e:
+    print(f"Address-related error connection to server: {e}")
+except socket.error as e:
+    socket_error = "Server socket is closed."
+    print(f"Connection error: {e}")
+#!!!!!!!!
 
 def GenerateGetRequest(user):
 
-    host=HOST
+    host= HOST
     port = 50000
     headers = """\
 GET /{method_requested} HTTP/1.1\r
@@ -41,12 +53,13 @@ Host: {host}\r
 Connection: close\r
 \r\n"""
 
-    body = 'user_no={user_no}&start_date={start_date}&return_date={return_date}&preferred_airline={preferred_airline}&people_count={people_count}'                                 
+    body = 'user_no={user_no}&start_date={start_date}&return_date={return_date}&preferred_airline={preferred_airline}&preferred_hotel={preferred_hotel}&people_count={people_count}'                                 
     body_bytes = body.format(
         user_no=user.user_no,
         start_date=user.start_date,
         return_date=user.return_date,
         preferred_airline=user.preferred_airline,
+        preferred_hotel=user.preferred_hotel,
         people_count=user.people_count
     ).encode('ascii')
     header_bytes = headers.format(
@@ -60,9 +73,21 @@ Connection: close\r
     return payload
 
 def CheckPreferredOrOffer(user):
-    get_request_str = GenerateGetRequest(user)
-    airline_socket.sendall(get_request_str)
-    return airline_socket.recv(4096)
+    if(user.method_requested == "check_dates"):
+
+        user.method_requested = "check_airline_dates"
+        get_request_airline = GenerateGetRequest(user)
+        user.method_requested = "check_hotel_dates"
+        get_request_hotel = GenerateGetRequest(user)
+
+
+        airline_socket.sendall(get_request_airline)
+        hotel_socket.sendall(get_request_hotel)
+
+        airline_response = airline_socket.recv(4096)
+        hotel_response = hotel_socket.recv(4096)
+
+        return b"||".join([airline_response, hotel_response])
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()
