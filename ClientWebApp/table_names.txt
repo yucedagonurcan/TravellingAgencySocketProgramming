@@ -1,0 +1,2 @@
+MarmaraHotel;SheratonHotel;HolidayInn;KocaoglanHotel;YepisyeniHotel;CheapThrills
+Pegasus;TurkishAirlines;EmiratesAirlines;EasyJet;RyanAir;DutchAirlines

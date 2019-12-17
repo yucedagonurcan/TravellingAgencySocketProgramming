@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request
 import socket
 import sys
+
 app = Flask(__name__)
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 PORT = 54000        # Port to listen on (non-privileged ports are > 1023)
 
 date_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_error = None
+
 try:
     date_socket.connect((HOST, PORT))
 except socket.gaierror as e:
@@ -14,6 +16,18 @@ except socket.gaierror as e:
 except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
+
+def GetTables():
+    try:
+        f= open("table_names.txt","r")
+        fl =f.readlines()
+        hotel_names = fl[0].strip().split(";")
+        airline_names = fl[1].strip().split(";")
+        f.close()
+    except Exception as e:
+        print(e)
+        return None, None
+    return hotel_names, airline_names
 
 @app.route("/check_dates", methods=["POST"])
 def CheckDates():
@@ -43,5 +57,10 @@ def AcceptDates():
 
 @app.route("/")
 def home():
-    return render_template("index.html",socket_error=socket_error)
+    hotel_names, airline_names = GetTables()
+    if not hotel_names:
+        hotel_names = ["MarmaraHotel","SheratonHotel","HolidayInn","KocaoglanHotel"]
+    if not airline_names:
+        airline_names = ["Pegasus","TurkishAirlines","EmiratesAirlines","EasyJet","RyanAir"]
+    return render_template("index.html",socket_error=socket_error, hotel_names=hotel_names, airline_names=airline_names)
     

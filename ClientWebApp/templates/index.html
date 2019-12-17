@@ -49,10 +49,9 @@
                         Preferred hotel
                     </button>
                     <button class="dropdown-menu" id="select-hotel">
-                        <a class="dropdown-item" href="#">MarmaraHotel</a>
-                        <a class="dropdown-item" href="#">SheratonHotel</a>
-                        <a class="dropdown-item" href="#">HolidayInn</a>
-                        <a class="dropdown-item" href="#">KocaoğlanHotel</a>
+                        {%for hotel in hotel_names%}
+                        <a class="dropdown-item" href="#">{{hotel}}</a>
+                        {%endfor%}
                     </button>
                 </div>
                 <div>
@@ -61,11 +60,9 @@
                         Preferred airline
                     </button>
                     <button class="dropdown-menu" id="select-airline">
-                        <a class="dropdown-item" href="#">Pegasus</a>
-                        <a class="dropdown-item" href="#">TurkishAirlines</a>
-                        <a class="dropdown-item" href="#">EmiratesAirlines</a>
-                        <a class="dropdown-item" href="#">EasyJet</a>
-                        <a class="dropdown-item" href="#">RyanAir</a>
+                        {%for airline in airline_names%}
+                        <a class="dropdown-item" href="#">{{airline}}</a>
+                        {%endfor%}
                     </button>
                 </div>
             </div>

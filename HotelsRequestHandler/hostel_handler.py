@@ -9,8 +9,39 @@ PORT = 56000
 MAX_PEOPLE_ON_HOTEL=3
 
 sel = selectors.DefaultSelector()
-conn = sqlite3.connect('Hotels.db')
+def create_connection(db_file):
+    """ create a database connection to the SQLite database
+        specified by db_file
+    :param db_file: database file
+    :return: Connection object or None
+    """
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+        return conn
+    except Error as e:
+        print(e)
+ 
+    return conn
+
+#! Specify fully path if you are not in HotelsRequestHandler folder man..
+conn = create_connection("Hotels.db")
 cur = conn.cursor()
+
+def CreateTable(new_table, cur):
+    try:
+        create_table_query = f"""CREATE TABLE {new_table} (
+                                "Index"	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+                                "Date"	TEXT NOT NULL,
+                                "UserNo" INTEGER NOT NULL
+                            );"""
+        cur.execute(create_table_query)
+    except Exception as e:
+        raise Exception(f"Exception occured when creating a new table: {new_table}, {e}")
+        return False
+    print(f"New table {new_table} created.")
+    conn.commit()
+    return True
 
 def GetTableNames(cursor):
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -80,6 +111,9 @@ Connection: keep-alive\r
     return payload
 def RequestHandler(req_dict, method_requested):
     if(method_requested == "/check_hotel_dates" ):
+        if(req_dict["preferred_hotel"] not in GetTableNames(cursor=cur)):
+            _ = CreateTable(req_dict["preferred_hotel"], cur)
+
         dates_df = CheckHotelDates(req_dict)
         if(int(req_dict["people_count"])  > MAX_PEOPLE_ON_HOTEL):
             return GenerateGetResponse("404 Not Found","Failure")
