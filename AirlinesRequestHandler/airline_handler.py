@@ -8,8 +8,11 @@ HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 55000       
 MAX_PEOPLE_ON_PLANE=3
 
+# Create selector for multiprocessing.
 sel = selectors.DefaultSelector()
-def create_connection(db_file):
+
+# Connection creation
+def CreateConnection(db_file):
     """ create a database connection to the SQLite database
         specified by db_file
     :param db_file: database file
@@ -19,15 +22,16 @@ def create_connection(db_file):
     try:
         conn = sqlite3.connect(db_file)
         return conn
-    except Error as e:
+    except Exception as e:
         print(e)
  
     return conn
 
 #! Specify fully path if you are not in AirlinesRquestHandler folder man..
-conn = create_connection("Airlines.db")
+conn = CreateConnection("Airlines.db")
 cur = conn.cursor()
 
+# Create a table if requested airline does not exist.
 def CreateTable(new_table, cur):
     try:
         create_table_query = f"""CREATE TABLE {new_table} (
@@ -42,17 +46,23 @@ def CreateTable(new_table, cur):
     print(f"New table {new_table} created.")
     conn.commit()
     return True
-
+# Gets table names from Airlines database
 def GetTableNames(cursor):
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     result = cursor.fetchall()
     return [ row[0] for row in result if row[0] != "sqlite_sequence"]
+
+# It generates dates starting from start_date and ends in end_date spaces by one day.
+# It also has a parameter that can add single quotes to the output.
 def GenerateDateSequence(start_date, end_date, single_quotes=True):
     if single_quotes:
         date_list = [x.strftime("'%d/%m/%Y'") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
     else:
         date_list = [x.strftime("%d/%m/%Y") for x in pd.date_range(start=start_date, end=end_date).tolist() ]
     return date_list
+
+# It generates a SQL query from request, returns the new insertable query components (records)
+# The outpu of this function later appended to the general Insert query.
 def GenerateQueryFromRequest(req_dict):
     new_bookings=[]
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"], single_quotes=False)
@@ -60,6 +70,9 @@ def GenerateQueryFromRequest(req_dict):
         for idx in range(int(req_dict["people_count"])):
             new_bookings.append((None, cur_date, req_dict["user_no"]))
     return new_bookings
+
+# By using GenerateQueryFromRequest, it will generate the insert query and and executes the query.
+# If an exception occurs, it will simply return Failure, if not it returns Success as insertion is successfull 
 def InsertNewBooking(req_dict):
     new_bookings = GenerateQueryFromRequest(req_dict)
     try:
@@ -70,12 +83,16 @@ def InsertNewBooking(req_dict):
         return "Failure"
     return "Success"
 
+# Given a request dictionary, it will generate the requested date sequence and execute a query to
+# return a Pandas DataFrame out of it. 
 def CheckAirlineDates(req_dict):
     date_sequence = GenerateDateSequence(req_dict["start_date"], req_dict["return_date"])
     where_statement = "(" + ",".join(date_sequence) + ")"
     quey_string = f"SELECT * from {req_dict['preferred_airline']} WHERE Date In {where_statement}"
     return pd.read_sql_query(quey_string, conn)
 
+# Given a request dictionary, it will search for other airlines that is available for booking,
+# if it finds one or more airlines, it will return these airlines as alternatives.
 def CheckAlternativeAirlines(req_dict):
     airline_names =  [ airline for airline in GetTableNames(cursor=cur) if req_dict["preferred_airline"] != airline]
     alternative_airlines = []
@@ -89,6 +106,9 @@ def CheckAlternativeAirlines(req_dict):
             if(max_booking_count + int(req_dict["people_count"])  <= MAX_PEOPLE_ON_PLANE):
                 alternative_airlines.append(cur_airline)
     return alternative_airlines
+
+# Generates the GET response for the requestee.
+# It will input the status and the response and return the GET response string.
 def GenerateGetResponse(status, response):
 
     headers = """\
@@ -110,6 +130,9 @@ Connection: keep-alive\r
     payload = header_bytes + body_bytes
     return payload
 
+# General request handler that inputs request dicitonary and a method requested,
+# executes the request. Request can be check_dates or accept_dates so they are different requests
+# that needs to be processed seperately.
 def RequestHandler(req_dict, method_requested):
     if(method_requested == "/check_airline_dates" ):
 
@@ -137,7 +160,8 @@ def RequestHandler(req_dict, method_requested):
         else:
             return GenerateGetResponse("404 Not Found","Failure")
 
-            
+# It will accept the socket and register the socket descriptor to the selector object
+# This will ensure that no more one socket gets the keys for the request.            
 def accept_wrapper(sock):
     conn, addr = sock.accept()
     print(f"Connection accepted from {addr}")
@@ -146,6 +170,12 @@ def accept_wrapper(sock):
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(conn, events, data=data)
 
+# Services the connection that is already accepted by welcoming socket.
+# It parses the request that is coming from client socket, send the body and method
+# to the RequestHandler. Then, it will gather the result of that request and send back to the 
+# selected(current served) socket.
+# It will also closes the socket if any error occurs as well as it unregisters the socket from
+# selector.
 def service_connection(key, mask):
     sock = key.fileobj
     data = key.data
@@ -187,16 +217,27 @@ def service_connection(key, mask):
             sent = sock.send(data.outb)
             data.outb = data.outb[sent:]
 
+# Create the socket
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Make the socket reusable.
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# Bind the socket to HOST and PORT
 lsock.bind((HOST, PORT))
+# Listen the connection requests
 lsock.listen()
 print(f"Airline Socket server is listening on {HOST}:{PORT}")
+
+# We will set the blocking state to False, because we will use selector object to make it non-blocking
 lsock.setblocking(False)
 
-
+# Register the listening socket into the selector object.
+# We will set the data to None to later understand if it is a listneing socket or already accepted one.
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
+# Server forever;
+# For every event(from registered sockets)
+##: If data is None, it is from listening socket
+##: Else it is an already accepted socket so we need to serve it.
 while True:
     events = sel.select(timeout=None)
     for key, mask in events:

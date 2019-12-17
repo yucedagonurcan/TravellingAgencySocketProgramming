@@ -1,6 +1,8 @@
 $(document).ready(function () {
 
     $(function () {
+        // Show alert function inputs strong and a regular message and success status
+        // It will pıp up a alert.
         function ShowAlert(strong_msg, regular_msg, is_success) {
             if (is_success) {
                 alert_type = "alert-success";
@@ -17,6 +19,7 @@ $(document).ready(function () {
             });
 
         }
+        // Post message object for sending to the back-end.
         post_msg = {
             "starting_date": null,
             "return_date": null,
@@ -39,6 +42,10 @@ $(document).ready(function () {
             yearRange: "-100:+20",
             dateFormat: "dd/m/yy",
         });
+
+        // If search_travel button is clicked:
+        // -- Get the starting, return date, preferred hotel, airline and people count.
+        // -- If dates are not specified show as invalid 
         $("#search_travel").click(function () {
 
             var send_msg = true;
@@ -71,6 +78,10 @@ $(document).ready(function () {
 
                 $('#starting_date_picker').removeClass("is-invalid");
                 $('#return_date_picker').removeClass("is-invalid");
+
+                // Trip Advisor Server check if dates are available for preferred hotel and airplane if it is
+                // it will return Success and if not, it will return alternative airlplanes and hotels if it finds any.
+                // If there is no alternative it will simply return Failure.
                 $.post("/check_dates", post_msg, (msg) => {
 
                     splitted_msg = msg.split("||");
@@ -126,6 +137,8 @@ $(document).ready(function () {
                 });
             }
         });
+
+        // Accept the original preferred hotel and airline offer.
         $('#accept_offer_single').click(() => {
             $.post("/accept_dates", post_msg, (msg) => {
                 if (msg == "Success||Success") {
@@ -135,6 +148,8 @@ $(document).ready(function () {
                 }
             });
         });
+
+        // Accept the alternative hotel and airline offer.
         $('#accept_offer_alternative').click(() => {
 
             var send_msg = true;

@@ -6,6 +6,9 @@ HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 54000        # The port used by the server
 PORT_AIRLINE = 55000
 PORT_HOTEL = 56000
+
+# User object for storing the request.
+# We will use socket port that is connected to Trip Advisor Server as user_no.
 class User():
     def __init__(self, user_no, start_date, return_date, preferred_hotel, preferred_airline,  people_count, method_requested):
         self.user_no = user_no 
@@ -15,7 +18,8 @@ class User():
         self.return_date = return_date 
         self.people_count = people_count 
         self.method_requested = method_requested 
-        
+
+# Create a selector object   
 sel = selectors.DefaultSelector()
 
 #* Airline Socket Connection
@@ -24,23 +28,25 @@ socket_error = None
 try:
     airline_socket.connect((HOST, PORT_AIRLINE))
 except socket.gaierror as e:
-    print(f"Address-related error connection to server: {e}")
+    print(f"Address-related error connection to Airline server: {e}")
 except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
 #*****
+
 #! Hotel Socket Connection
 hotel_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_error = None
 try:
     hotel_socket.connect((HOST, PORT_HOTEL))
 except socket.gaierror as e:
-    print(f"Address-related error connection to server: {e}")
+    print(f"Address-related error connection to Hotel server: {e}")
 except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
 #!!!!!!!!
 
+# Generates a GET request to send to the airline and hotel sockets.
 def GenerateGetRequest(user):
 
     host= HOST
@@ -71,12 +77,19 @@ Connection: close\r
 
     payload = header_bytes + body_bytes
     return payload
+
+# Parses a HTTP response and returns status code and body.
 def ParseHTTPResponse(response):
     res_splitted = response.split(" ")
     status_code = res_splitted[1]
     body = response.split("\r\n")[-1].replace(" ", "").split("=")[-1]
     return status_code, body
 
+# Checks the requested time for airline and hotels and sends a GET
+# request to them. Result will be Success, Failure or Alternatives.
+# It will return the response.
+# Also user Client Web Server can send check_dates or accept_dates
+# requests, it will behave differently by these preferences. 
 def CheckPreferredOrOffer(user):
     if(user.method_requested == "check_dates"):
 
@@ -139,6 +152,9 @@ def CheckPreferredOrOffer(user):
         return "||".join([airline_response, hotel_response])
 
     return b"Failure||Failure"
+
+# It will accept the socket and register the socket descriptor to the selector object
+# This will ensure that no more one socket gets the keys for the request.  
 def accept_wrapper(sock):
     conn, addr = sock.accept()
     print(f"Connection accepted from {addr}")
@@ -147,7 +163,9 @@ def accept_wrapper(sock):
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(conn, events, data=data)
 
-
+# Services to a client request.
+# Parses the recieved socket data, creates a new User object with it.
+# It will also unregister and closes the socket if there is any error recieving the data.
 def service_connection(key, mask):
     sock = key.fileobj
     data = key.data
@@ -179,16 +197,27 @@ def service_connection(key, mask):
             sent = sock.send(data.outb)
             data.outb = data.outb[sent:]
 
+# Create the socket
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Make the socket reusable.
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# Bind the socket to HOST and PORT
 lsock.bind((HOST, PORT))
+# Listen the connection requests
 lsock.listen()
 print(f"Trip Advisor Socket server is listening on {HOST}:{PORT}")
+# We will set the blocking state to False, because we will use selector object to make it non-blocking
 lsock.setblocking(False)
 
 
+# Register the listening socket into the selector object.
+# We will set the data to None to later understand if it is a listneing socket or already accepted one.
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
+# Server forever;
+# For every event(from registered sockets)
+##: If data is None, it is from listening socket
+##: Else it is an already accepted socket so we need to serve it.
 while True:
     events = sel.select(timeout=None)
     for key, mask in events:

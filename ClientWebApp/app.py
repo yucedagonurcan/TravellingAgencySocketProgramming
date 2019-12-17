@@ -6,10 +6,12 @@ app = Flask(__name__)
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 PORT = 54000        # Port to listen on (non-privileged ports are > 1023)
 
+# Create a socket for connection with the Trip Advisor Server.
 date_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket_error = None
 
 try:
+    # Connect with the Trip Advisor Server
     date_socket.connect((HOST, PORT))
 except socket.gaierror as e:
     print(f"Address-related error connection to server: {e}")
@@ -17,6 +19,8 @@ except socket.error as e:
     socket_error = "Server socket is closed."
     print(f"Connection error: {e}")
 
+# Get tables from table_names.txt.
+# For dynamic airline and hotel adding.
 def GetTables():
     try:
         f= open("table_names.txt","r")
@@ -29,6 +33,8 @@ def GetTables():
         return None, None
     return hotel_names, airline_names
 
+# check_dates route is for sending the request to Trip Advisor Server form that filled by 
+# user in front-end.
 @app.route("/check_dates", methods=["POST"])
 def CheckDates():
 
@@ -42,6 +48,9 @@ def CheckDates():
     result = date_socket.recv(4096)
     return result
     
+# accept_dates route will send accept request to Trip Advisor Server.
+# So that Trip Advisor Server can send the accept request to airline and hotels databases to
+# insert the specified date.
 @app.route("/accept_dates", methods=["POST"])
 def AcceptDates():
 
@@ -55,6 +64,7 @@ def AcceptDates():
     result = date_socket.recv(4096)
     return result
 
+# Main route, it will get the table names and render the HTML.
 @app.route("/")
 def home():
     hotel_names, airline_names = GetTables()
