@@ -21,10 +21,12 @@ except socket.error as e:
 
 # Get tables from table_names.txt.
 # For dynamic airline and hotel adding.
+
+
 def GetTables():
     try:
-        f= open("table_names.txt","r")
-        fl =f.readlines()
+        f = open("table_names.txt", "r")
+        fl = f.readlines()
         hotel_names = fl[0].strip().split(";")
         airline_names = fl[1].strip().split(";")
         f.close()
@@ -33,7 +35,7 @@ def GetTables():
         return None, None
     return hotel_names, airline_names
 
-# check_dates route is for sending the request to Trip Advisor Server form that filled by 
+# check_dates route is for sending the request to Trip Advisor Server form that filled by
 # user in front-end.
 @app.route("/check_dates", methods=["POST"])
 def CheckDates():
@@ -43,11 +45,12 @@ def CheckDates():
     preferred_hotel = request.form['preferred_hotel']
     preferred_airline = request.form['preferred_airline']
     people_count = request.form['people_count']
-    req_method="check_dates"
-    date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
+    req_method = "check_dates"
+    date_socket.send(
+        f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
     result = date_socket.recv(4096)
     return result
-    
+
 # accept_dates route will send accept request to Trip Advisor Server.
 # So that Trip Advisor Server can send the accept request to airline and hotels databases to
 # insert the specified date.
@@ -59,8 +62,9 @@ def AcceptDates():
     preferred_hotel = request.form['preferred_hotel']
     preferred_airline = request.form['preferred_airline']
     people_count = request.form['people_count']
-    req_method="accept_dates"
-    date_socket.send(f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
+    req_method = "accept_dates"
+    date_socket.send(
+        f"{start_date};{return_date};{preferred_hotel};{preferred_airline};{people_count};{req_method}".encode())
     result = date_socket.recv(4096)
     return result
 
@@ -69,8 +73,9 @@ def AcceptDates():
 def home():
     hotel_names, airline_names = GetTables()
     if not hotel_names:
-        hotel_names = ["MarmaraHotel","SheratonHotel","HolidayInn","KocaoglanHotel"]
+        hotel_names = ["MarmaraHotel", "SheratonHotel",
+                       "HolidayInn", "KocaoglanHotel"]
     if not airline_names:
-        airline_names = ["Pegasus","TurkishAirlines","EmiratesAirlines","EasyJet","RyanAir"]
-    return render_template("index.html",socket_error=socket_error, hotel_names=hotel_names, airline_names=airline_names)
-    
+        airline_names = ["Pegasus", "TurkishAirlines",
+                         "EmiratesAirlines", "EasyJet", "RyanAir"]
+    return render_template("index.html", socket_error=socket_error, hotel_names=hotel_names, airline_names=airline_names)

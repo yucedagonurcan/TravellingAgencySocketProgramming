@@ -13,7 +13,7 @@ $(document).ready(function () {
             $("#info-alert").html(`<strong>${strong_msg}</strong> ${regular_msg}`);
             $("#info-alert").show()
 
-            $("#info-alert").fadeTo(2000, 500).slideUp(500, function () {
+            $("#info-alert").fadeTo(4000, 500).slideUp(500, function () {
                 $(this).hide();
                 $(this).removeClass(alert_type);
             });
